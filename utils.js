@@ -1,9 +1,31 @@
 // --- TTS Voice Selection ---
 export let voices = []; // To be populated with available voices
 
+export function initializeTts(voiceSelectElement) {
+    if (!window.speechSynthesis) {
+        console.warn("Speech Synthesis not supported.");
+        voiceSelectElement.disabled = true;
+        return;
+    }
+    console.log("TTS supported. Initializing voice list.");
+    console.log("voiceSelectElement:", voiceSelectElement);
+    // Initial population, with a slight delay to ensure voices are loaded
+    setTimeout(() => {
+        populateVoiceList(voiceSelectElement);
+    }, 100);
+    
+    if (window.speechSynthesis.onvoiceschanged !== undefined) {
+        window.speechSynthesis.onvoiceschanged = () => {
+            console.log("Voices changed event fired.");
+            populateVoiceList(voiceSelectElement);
+        };
+    }
+}
+
 export function populateVoiceList(voiceSelectElement) {
     if (!window.speechSynthesis) return;
     voices = window.speechSynthesis.getVoices();
+    console.log("Total voices found:", voices.length);
     voiceSelectElement.innerHTML = ''; // Clear existing options
     
     const savedVoiceName = localStorage.getItem('falante-voice');
@@ -18,8 +40,10 @@ export function populateVoiceList(voiceSelectElement) {
         if (!bestFitVoice) bestFitVoice = usVoices[0] || null;
     }
 
-    voices.filter(voice => voice.lang.startsWith('en'))
-        .forEach(voice => {
+    const englishVoices = voices.filter(voice => voice.lang.startsWith('en'));
+    console.log("English voices found:", englishVoices.length);
+
+    englishVoices.forEach(voice => {
             const option = document.createElement('option');
             option.textContent = `${voice.name} (${voice.lang})`;
             option.setAttribute('data-lang', voice.lang);
@@ -31,19 +55,10 @@ export function populateVoiceList(voiceSelectElement) {
                 option.selected = true;
             }
         });
+    console.log("voiceSelectElement options length after population:", voiceSelectElement.options.length);
 }
 
-export function initializeTts(voiceSelectElement) {
-    if (!window.speechSynthesis) {
-        console.warn("Speech Synthesis not supported.");
-        voiceSelectElement.disabled = true;
-        return;
-    }
-    populateVoiceList(voiceSelectElement);
-    if (window.speechSynthesis.onvoiceschanged !== undefined) {
-        window.speechSynthesis.onvoiceschanged = () => populateVoiceList(voiceSelectElement);
-    }
-}
+
 
 export function speakText(text, voiceSelectElement, opts = {}) {
     return new Promise((resolve, reject) => {
