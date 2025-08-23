@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Listening Practice</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>F</text></svg>">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+    <!-- One-time Notification Popup -->
+    <div id="noticePopup" class="popup-overlay" style="display: none;">
+        <div class="popup-content">
+            <button id="closeNoticePopup" class="popup-close-btn">&times;</button>
+            <h2>Notice</h2>
+            <p>This site currently works best on desktop browsers. Voice generation relies on your browser's built-in capabilities, which may vary on mobile devices. We are working to improve the experience across all platforms.</p>
+        </div>
+    </div>
+    <!-- End Notification Popup -->
+
+    <!-- Star Award Popup -->
+    <div id="starPopup" class="popup-overlay" style="display: none;">
+        <div class="popup-content star-popup-content">
+            <button id="closeStarPopup" class="popup-close-btn">&times;</button>
+            <h2>⭐ New Star Earned! ⭐</h2>
+            <p id="starPopupMessage">Congratulations! You've mastered another 100 sentences! Keep shining!</p>
+            <p>Total Stars: <span id="starPopupCount">0</span></p>
+        </div>
+    </div>
+    <!-- End Star Award Popup -->
+
+    <header class="top-navbar">
+        <div class="navbar-left">
+            <a href="/" class="navbar-logo-link">Falante</a>
+            <!-- Removed nav-title -->
+        </div>
+        <nav class="navbar-right">
+            <ul class="nav-links">
+                <li><a href="#" class="nav-link-listen active" data-view="listen">Listen & Type</a></li>
+                <li><a href="#" class="nav-link-flipcard" data-view="flip">Flip Card</a></li>
+                <li><a href="#" class="nav-link-sentences" data-view="sentences">Sentences</a></li>
+                <li><a href="#" class="nav-link-test" data-view="test">English Test</a></li>
+            </ul>
+            <!-- Removed themeToggle button -->
+        </nav>
+    </header>
+
+    <!-- Global Controls -->
+    <div class="container" id="view-controls">
+        <!-- Category Selector -->
+        <div class="category-selector" style="margin-bottom: 0; text-align: left;">
+            <label for="categorySelect">Select Grammar Category:</label>
+            <select id="categorySelect">
+                <option value="All">All Categories</option>
+                <!-- Options populated by script.js -->
+            </select>
+        </div>
+        <!-- End Category Selector -->
+
+        <!-- Voice Selector -->
+        <div class="category-selector" style="margin-bottom: 0; text-align: left; margin-top: 10px;">
+            <label for="voiceSelect">Select Voice:</label>
+            <select id="voiceSelect">
+                <!-- Options populated by script.js -->
+            </select>
+        </div>
+        <!-- End Voice Selector -->
+
+        
+    </div>
+
+    <!-- Listen & Type View -->
+    <div class="container" id="view-listen">
+        <!-- Mode Selector Removed -->
+
+        <div class="header">
+            <h1>Listen & Type Practice</h1> <!-- Removed ID -->
+            <div class="session-progress"> <!-- Added Session Progress -->
+                Completed this session: <span id="sessionCountListen">0</span>
+            </div>
+            <!-- Score display removed -->
+        </div>
+
+        <!-- Main Practice Elements (Listen & Type Area) -->
+        <div id="listenTypeArea">
+            <!-- Study Mode Indicator -->
+            <div class="study-mode-indicator">
+                <div class="mode-icon">🎧</div>
+                <div class="mode-info">
+                    <div class="mode-title">Listen & Type Mode</div>
+                    <div class="mode-description">Improve your listening and writing skills</div>
+                </div>
+            </div>
+            
+            <button id="speakButton" class="button-primary"><i class="fa-solid fa-volume-high"></i> <span class="button-text">Speak Sentence</span></button>
+            <div id="feedback" class="feedback-area">
+                <span id="feedbackText">Listen to the sentence first.</span>
+                <span id="loadingIndicator" style="display: none;">Loading...</span> <!-- Added Loading Indicator -->
+            </div>
+            <textarea id="userInput" rows="3" placeholder="Type what you hear..."></textarea>
+            <div class="button-group">
+                <button id="checkButton"><i class="fa-solid fa-check"></i> <span class="button-text">Check Answer</span></button>
+                <button id="hintButton"><i class="fa-solid fa-lightbulb"></i> <span class="button-text">Hint</span></button>
+                <!-- <button id="translateButton">Show Translation</button> --> <!-- Removed -->
+                <button id="nextSentenceButtonListenType" class="button-next" style="display: none;"><i class="fa-solid fa-forward"></i> <span class="button-text">Next Sentence</span></button> <!-- Renamed ID -->
+            </div>
+            <div class="shortcuts-info">
+                Shortcuts: Speak (Ctrl), Check (Enter), Hint (Tab)
+            </div>
+        </div> <!-- End #listenTypeArea -->
+        
+        <!-- Progress/Level Display (Only shown when logged in) -->
+        <div id="progressSection" style="display: none; margin-bottom: 20px;">
+            <div class="level-display">Level: <span id="currentLevel">0</span></div>
+            <div class="progress-bar-container">
+                <div id="progressBar" class="progress-bar"></div>
+            </div>
+            <div class="progress-text">Next Level: <span id="progressCount">0</span> / <span id="nextLevelCount">2</span> sentences</div>
+        </div>
+        <div id="levelUpNotification" class="level-up-notification" style="display: none;"></div>
+        <button id="nextLevelButton" class="button-next" style="display: none; margin-top: 10px;">Continue to Next Level</button> <!-- Added Next Level Button -->
+        
+        <!-- Achievement System -->
+        <div id="achievementSection" class="achievement-section" style="display: none; margin-bottom: 20px;">
+            <h3>🏆 Recent Achievements</h3>
+            <div id="achievementList" class="achievement-list"></div>
+        </div>
+        
+        <!-- Fun Stats Display -->
+        <div id="funStatsSection" class="fun-stats-section" style="display: none; margin-bottom: 20px;">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-icon">🔥</div>
+                    <div class="stat-value" id="currentStreak">0</div>
+                    <div class="stat-label">Current Streak</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon">⭐</div>
+                    <div class="stat-value" id="totalStars">0</div>
+                    <div class="stat-label">Total Stars</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon">🎯</div>
+                    <div class="stat-value" id="accuracyRate">0%</div>
+                    <div class="stat-label">Accuracy</div>
+                </div>
+            </div>
+        </div>
+        <!-- End Progress/Level Display -->
+
+    </div> <!-- End #view-listen -->
+
+    <!-- Flip Card View -->
+    <div class="container" id="view-flip" style="display:none;">
+        <div class="header">
+            <h1>Flip Card Practice (Audio First)</h1>
+            <div class="session-progress">
+                Cards Reviewed: <span id="sessionCountFlip">0</span>
+            </div>
+        </div>
+
+        <div class="flashcard-container">
+            <div id="flashcard" class="flashcard">
+                <div class="flashcard-face flashcard-front">
+                    <i class="fa-solid fa-volume-high"></i>
+                    <p>Click card to hear audio</p>
+                </div>
+                <div class="flashcard-face flashcard-back">
+                    <p id="flashcardText">Sentence text will appear here.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button id="nextCardButton" class="button-next"><i class="fa-solid fa-forward"></i> <span class="button-text">Next Card</span></button>
+        </div>
+        <div class="shortcuts-info">
+            Shortcuts: Hear/Flip (Click Card or Ctrl), Next (Enter)
+        </div>
+
+    </div> <!-- End #view-flip -->
+
+    <!-- Sentences View -->
+    <div class="container" id="view-sentences" style="display:none;">
+        <h1>Sentences</h1>
+        <p>Add one or more lines in the format: <code>Sentence // Category</code></p>
+
+        <!-- AI Sentence Prompt Generator -->
+        <div class="stat-card" style="margin-top: 20px; margin-bottom: 20px; text-align: left;">
+            <h3 style="text-align: center; margin-bottom: 15px;">AI Sentence Prompt Generator</h3>
+            <p style="text-align: center; font-size: 0.9em; color: var(--text-secondary); margin-bottom: 20px;">
+                Use this to create a prompt for an AI to generate sentences in the correct format for this app.
+            </p>
+            <div style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 15px; margin-bottom: 15px;">
+                <div style="flex: 1 1 100px;">
+                    <label for="sentencePromptCount">Number of sentences:</label>
+                    <input type="number" id="sentencePromptCount" value="20" max="100" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-secondary); background-color: var(--bg-tertiary); color: var(--text-primary);">
+                </div>
+                <div style="flex: 2 1 150px;">
+                    <label for="sentencePromptTheme">Theme:</label>
+                    <input type="text" id="sentencePromptTheme" placeholder="e.g., travel, at a restaurant" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-secondary); background-color: var(--bg-tertiary); color: var(--text-primary);">
+                </div>
+                <div style="flex: 2 1 150px;">
+                    <label for="sentencePromptCategory">Category Name:</label>
+                    <input type="text" id="sentencePromptCategory" list="category-list" placeholder="e.g., Travel Phrases" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-secondary); background-color: var(--bg-tertiary); color: var(--text-primary);">
+                    <datalist id="category-list"></datalist>
+                </div>
+            </div>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <button id="generateSentencePromptBtn" class="button-primary"><i class="fa-solid fa-wand-magic-sparkles"></i> Generate Prompt</button>
+            </div>
+            <div id="generatedSentencePromptContainer" style="display: none;">
+                <label for="generatedSentencePromptArea">Your generated prompt:</label>
+                <textarea id="generatedSentencePromptArea" rows="8" readonly style="background-color: var(--bg-primary); color: var(--text-secondary);"></textarea>
+                <div style="text-align: right; margin-top: 10px;">
+                    <button id="copySentencePromptBtn" class="button-secondary"><i class="fa-solid fa-copy"></i> Copy</button>
+                </div>
+            </div>
+        </div>
+        <!-- End AI Sentence Prompt Generator -->
+        <textarea id="bulkInput" placeholder="She goes to school every day. // Simple Present"></textarea>
+        <div class="button-group">
+            <button id="saveBtn" class="button-primary"><i class="fa-solid fa-save"></i> <span class="button-text">Save</span></button>
+            <button id="clearBtn" class="button-danger"><i class="fa-solid fa-trash"></i> <span class="button-text">Clear All</span></button>
+            <button id="exportBtn"><i class="fa-solid fa-file-export"></i> <span class="button-text">Export</span></button>
+            <input type="file" id="importFile" accept="application/json" style="display:none" />
+            <button id="importBtn"><i class="fa-solid fa-file-import"></i> <span class="button-text">Import</span></button>
+        </div>
+        <hr />
+        <h2>Your Sentences</h2>
+        <div id="list"></div>
+    </div> <!-- End #view-sentences -->
+
+    <!-- English Test View -->
+    <div class="container" id="view-test" style="display:none;">
+        <h1>English Test Generator</h1>
+
+        <!-- AI Prompt Generator -->
+        <div class="stat-card" style="margin-top: 20px; text-align: left;">
+            <h3 style="text-align: center; margin-bottom: 15px;">AI Prompt Generator</h3>
+            <p style="text-align: center; font-size: 0.9em; color: var(--text-secondary); margin-bottom: 20px;">
+                This tool helps you create a detailed prompt to give to an AI (like ChatGPT, Gemini, etc.). The AI will use the prompt to generate a test script that is compatible with this application.
+            </p>
+            <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                <div style="flex-grow: 1;">
+                    <label for="promptQuestionCount">Number of questions:</label>
+                    <input type="number" id="promptQuestionCount" value="10" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-secondary); background-color: var(--bg-tertiary); color: var(--text-primary);">
+                </div>
+                <div style="flex-grow: 2;">
+                    <label for="promptGrammarTopic">Grammar topic:</label>
+                    <input type="text" id="promptGrammarTopic" placeholder="e.g., Present Perfect, Phrasal Verbs" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-secondary); background-color: var(--bg-tertiary); color: var(--text-primary);">
+                </div>
+            </div>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <button id="generatePromptBtn" class="button-primary"><i class="fa-solid fa-wand-magic-sparkles"></i> Generate Prompt</button>
+            </div>
+            <div id="generatedPromptContainer" style="display: none;">
+                <label for="generatedPromptArea">Your generated prompt:</label>
+                <textarea id="generatedPromptArea" rows="8" readonly style="background-color: var(--bg-primary); color: var(--text-secondary);"></textarea>
+                <div style="text-align: right; margin-top: 10px;">
+                    <button id="copyPromptBtn" class="button-secondary"><i class="fa-solid fa-copy"></i> Copy</button>
+                </div>
+            </div>
+        </div>
+        <!-- End AI Prompt Generator -->
+
+        <textarea id="testScriptInputArea" rows="8" placeholder="Paste your AI-generated test script here..."></textarea>
+        <div class="button-group" style="margin-top: 10px;">
+            <button id="loadTestFromTextBtn" class="button-primary"><i class="fa-solid fa-paste"></i> Load from Text</button>
+            <input type="file" id="importTestFile" accept=".txt,.json" style="display:none" />
+            <button id="importTestBtn" class="button-secondary"><i class="fa-solid fa-file-import"></i> Import from File</button>
+        </div>
+
+        <!-- Script Explanation Section -->
+        <div style="margin-top: 20px;">
+            <!-- Conteúdo alinhado à esquerda -->
+            <div id="scriptExplanationContent" style="display: none; padding: 15px; border: 1px solid #e9ecef; border-radius: 8px; background-color: #1e1e1e; text-align: left;">
+                <p>I want you to act as an English test generator in the following script format for use on a platform.</p>
+                <p>Follow these rules carefully:</p>
+                <h4>There are two types of questions:</h4>
+                <h5>{O} Multiple choice questions</h5>
+                <p>First line: <code>{O} + question text.</code></p>
+                <p>Second line: <code>options between {}, separated by ;.</code></p>
+                <p>Important: the first option inside the braces is always the correct one. The site will shuffle them automatically later.</p>
+                <p>Third line: <code>{Explanation} with a short and clear explanation of why the first option is correct.</code></p>
+                
+                <h5>{A} Audio/typing questions</h5>
+                <p>First line: <code>{A} + sentence that should be read by the site.</code></p>
+                <p>Second line: <code>exact correct answer between {}.</code></p>
+                <p>Third line: <code>{Explanation} with a short explanation.</code></p>
+                
+                <h4>Formatting rules:</h4>
+                <p>Do not leave blank lines between the question, options/answer, and explanation of the same question.</p>
+                <p>There can be a blank line only between different questions.</p>
+                <p>Always use English for the questions and answers, but the explanations can be in simple English for intermediate-level students.</p>
+                <p>In the end, deliver only the ready-to-copy-and-paste script, without extra explanations outside the standard format.</p>
+            </div>
+        </div>
+        
+        <!-- End Script Explanation Section -->
+
+        <hr />
+        <h2>Generated Test</h2>
+        <div id="testOutput"></div>
+        <button id="finishTestBtn" class="button-primary" style="display:none; margin-top:20px;">Finish Test</button>
+        <div id="testResults" style="margin-top:20px; text-align:left;"></div>
+    </div> <!-- End #view-test -->
+
+    <!-- Removed the inline management section -->
+
+    <script>
+      // Removed theme toggle (persist in localStorage) IIFE
+      // simple toast helper
+      window.showToast = function(message, type='info', timeout=2200){
+        const el = document.createElement('div');
+        el.className = `toast ${type}`;
+        el.textContent = message;
+        document.body.appendChild(el);
+        requestAnimationFrame(()=> el.classList.add('show'));
+        setTimeout(()=>{
+          el.classList.remove('show');
+          setTimeout(()=> el.remove(), 200);
+        }, timeout);
+      }
+    </script>
+    <script src="script.js"></script>
+
+    <div class="donation-section">
+        <p>❤️ Enjoying the practice? Consider supporting this project!</p>
+        <a href="https://ko-fi.com/falante" target="_blank" rel="noopener noreferrer" class="kofi-button">Support on Ko-fi</a>
+    </div>
+</body>
+</html>
