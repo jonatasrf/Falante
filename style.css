@@ -439,21 +439,33 @@ textarea::placeholder {
 /* Styles for word-by-word diff feedback - Dark Mode */
 .feedback-area .diff-correct-word {
     color: var(--accent-success);
-    display: inline-block;
-    margin-right: 0.2em;
-    text-decoration: none;
-    background-color: transparent;
+    font-weight: 600;
 }
 
 .feedback-area .diff-incorrect-word {
     color: var(--accent-error);
-    text-decoration: line-through;
-    background-color: rgba(239, 68, 68, 0.1);
-    padding: 2px 6px;
-    border-radius: 6px;
-    display: inline-block;
-    margin-right: 0.2em;
-    border: 1px solid rgba(239, 68, 68, 0.2);
+    text-decoration: line-through; /* Keep strikethrough for incorrect words */
+    background-color: rgba(239, 68, 68, 0.15); /* Light red background */
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+
+.feedback-area .diff-missing-word {
+    color: var(--text-muted); /* Muted color for missing words */
+    text-decoration: underline dotted; /* Dotted underline to indicate missing */
+    font-style: italic;
+    /* Add padding and border-radius for consistency */
+    padding: 2px 4px;
+    border-radius: 4px;
+    background-color: rgba(161, 161, 170, 0.1); /* Light grey background */
+}
+
+.feedback-area .diff-extra-word {
+    color: var(--accent-warning); /* Warning color for extra words */
+    text-decoration: line-through; /* Strikethrough for extra words */
+    background-color: rgba(245, 158, 11, 0.15); /* Light orange background */
+    padding: 2px 4px;
+    border-radius: 4px;
 }
 
 
@@ -499,8 +511,10 @@ textarea::placeholder {
     padding: 8px 18px;
     background: var(--accent-primary);
     color: var(--text-primary) !important;
-    text-decoration: none;
+    border: none;
     border-radius: 6px;
+    cursor: pointer;
+    font-size: 1em;
     font-weight: 600;
     transition: all 0.2s ease;
     border: 1px solid var(--accent-primary);
@@ -1776,4 +1790,84 @@ textarea:focus {
     .mode-description {
         font-size: 0.9em;
     }
+}
+
+/* Hamburger Menu */
+.hamburger-menu {
+    display: none; /* Hidden by default */
+    background: none;
+    border: none;
+    font-size: 1.8em;
+    color: var(--text-primary); /* Inherit text color */
+    cursor: pointer;
+    padding: 5px;
+    z-index: 1001; /* Above navbar */
+}
+
+/* Responsive Navbar */
+@media (max-width: 768px) { /* Adjust breakpoint as needed */
+    .top-navbar {
+        justify-content: space-between; /* Ensure space between logo and hamburger */
+    }
+
+    .navbar-right {
+        display: none; /* Hide nav links by default on small screens */
+        flex-direction: column;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(10, 10, 10, 0.98); /* Dark overlay */
+        backdrop-filter: blur(15px);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+        transition: transform 0.3s ease-in-out;
+        transform: translateX(100%); /* Start off-screen */
+    }
+
+    .navbar-right.active {
+        display: flex; /* Show when active */
+        transform: translateX(0); /* Slide in */
+    }
+
+    .nav-links {
+        flex-direction: column;
+        gap: 30px; /* More space between links in mobile menu */
+        text-align: center;
+    }
+
+    .nav-links a {
+        font-size: 1.4em; /* Adjusted font size for mobile links */
+        padding: 10px 0;
+    }
+
+    .hamburger-menu {
+        display: block; /* Show hamburger on small screens */
+    }
+
+    /* Hide user status in mobile menu if it's part of navbar-right */
+    .top-navbar .user-status {
+        display: none;
+    }
+
+    .close-nav-button {
+        display: block; /* Show on small screens when menu is active */
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: none;
+        border: none;
+        font-size: 2.5em; /* Larger for easy tapping */
+        color: var(--text-primary);
+        cursor: pointer;
+        z-index: 1002; /* Above the menu content */
+        padding: 10px;
+    }
+}
+
+/* Hide close button on larger screens */
+.close-nav-button {
+    display: none;
 }

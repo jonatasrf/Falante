@@ -19,6 +19,17 @@
     </div>
     <!-- End Notification Popup -->
 
+    <!-- Level Up Popup -->
+    <div id="levelUpPopup" class="popup-overlay" style="display: none;">
+        <div class="popup-content">
+            <button id="closeLevelUpPopup" class="popup-close-btn">&times;</button>
+            <h2>🏆 Level Up! 🏆</h2>
+            <p id="levelUpMessage">Congratulations! You've reached a new level!</p>
+            <p>You are now Level: <span id="levelUpPopupCount">0</span></p>
+        </div>
+    </div>
+    <!-- End Level Up Popup -->
+
     <!-- Star Award Popup -->
     <div id="starPopup" class="popup-overlay" style="display: none;">
         <div class="popup-content star-popup-content">
@@ -33,16 +44,21 @@
     <header class="top-navbar">
         <div class="navbar-left">
             <a href="/" class="navbar-logo-link">Falante</a>
-            <!-- Removed nav-title -->
         </div>
-        <nav class="navbar-right">
+        <!-- Hamburger Icon for Mobile -->
+        <button class="hamburger-menu" id="hamburgerMenu" aria-label="Toggle navigation">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+        <nav class="navbar-right" id="mainNav"> <!-- Added id="mainNav" -->
+            <button id="closeNav" class="close-nav-button" aria-label="Close navigation">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
             <ul class="nav-links">
                 <li><a href="#" class="nav-link-listen active" data-view="listen">Listen & Type</a></li>
                 <li><a href="#" class="nav-link-flipcard" data-view="flip">Flip Card</a></li>
                 <li><a href="#" class="nav-link-sentences" data-view="sentences">Sentences</a></li>
                 <li><a href="#" class="nav-link-test" data-view="test">English Test</a></li>
             </ul>
-            <!-- Removed themeToggle button -->
         </nav>
     </header>
 
@@ -118,8 +134,6 @@
             </div>
             <div class="progress-text">Next Level: <span id="progressCount">0</span> / <span id="nextLevelCount">2</span> sentences</div>
         </div>
-        <div id="levelUpNotification" class="level-up-notification" style="display: none;"></div>
-        <button id="nextLevelButton" class="button-next" style="display: none; margin-top: 10px;">Continue to Next Level</button> <!-- Added Next Level Button -->
         
         <!-- Achievement System -->
         <div id="achievementSection" class="achievement-section" style="display: none; margin-bottom: 20px;">
@@ -174,6 +188,11 @@
 
         <div class="button-group">
             <button id="nextCardButton" class="button-next"><i class="fa-solid fa-forward"></i> <span class="button-text">Next Card</span></button>
+            <div id="srsButtons" style="display: none; gap: 10px;">
+                <button id="srsAgain" class="button-danger">Again (1 min)</button>
+                <button id="srsGood" class="button-primary">Good (10 min)</button>
+                <button id="srsEasy" class="button-secondary">Easy (4 days)</button>
+            </div>
         </div>
         <div class="shortcuts-info">
             Shortcuts: Hear/Flip (Click Card or Ctrl), Next (Enter)
@@ -324,7 +343,7 @@
         }, timeout);
       }
     </script>
-    <script src="script.js"></script>
+    <script type="module" src="main.js"></script>
 
     <div class="donation-section">
         <p>❤️ Enjoying the practice? Consider supporting this project!</p>
