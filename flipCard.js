@@ -1,4 +1,4 @@
-import { speakText, loadLocalSentences, saveLocalSentences, showToast, shuffleArray } from './utils.js';
+import { speakText, loadLocalSentences, saveLocalSentences, showToast, shuffleArray, initializeTts } from './utils.js';
 
 // State
 let currentCard = null;
@@ -56,6 +56,13 @@ export function initializeFlipCardView(elements) {
         sessionCountFlipElement, categorySelectElement, voiceSelectElement,
         srsButtons, srsAgain, srsGood, srsEasy
     } = elements;
+
+    initializeTts(voiceSelectElement);
+
+    voiceSelectElement.addEventListener('change', () => {
+        localStorage.setItem('falante-voice', voiceSelectElement.value);
+        showToast(`Voice changed`, 'info');
+    });
 
     function speakSentence() {
         if (!currentCard || !currentCard.text) return;

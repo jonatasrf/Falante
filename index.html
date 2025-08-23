@@ -62,8 +62,20 @@
         </nav>
     </header>
 
-    <!-- Global Controls -->
-    <div class="container" id="view-controls">
+    
+
+    <!-- Listen & Type View -->
+    <div class="container" id="view-listen">
+        <!-- Mode Selector Removed -->
+
+        <div class="header">
+            <h1>Listen & Type Practice</h1> <!-- Removed ID -->
+            <div class="session-progress"> <!-- Added Session Progress -->
+                Completed this session: <span id="sessionCountListen">0</span>
+            </div>
+            <!-- Score display removed -->
+        </div>
+
         <!-- Category Selector -->
         <div class="category-selector" style="margin-bottom: 0; text-align: left;">
             <label for="categorySelect">Select Grammar Category:</label>
@@ -82,21 +94,6 @@
             </select>
         </div>
         <!-- End Voice Selector -->
-
-        
-    </div>
-
-    <!-- Listen & Type View -->
-    <div class="container" id="view-listen">
-        <!-- Mode Selector Removed -->
-
-        <div class="header">
-            <h1>Listen & Type Practice</h1> <!-- Removed ID -->
-            <div class="session-progress"> <!-- Added Session Progress -->
-                Completed this session: <span id="sessionCountListen">0</span>
-            </div>
-            <!-- Score display removed -->
-        </div>
 
         <!-- Main Practice Elements (Listen & Type Area) -->
         <div id="listenTypeArea">
@@ -173,6 +170,25 @@
                 Cards Reviewed: <span id="sessionCountFlip">0</span>
             </div>
         </div>
+
+        <!-- Category Selector -->
+        <div class="category-selector" style="margin-bottom: 0; text-align: left;">
+            <label for="categorySelect">Select Grammar Category:</label>
+            <select id="categorySelect">
+                <option value="All">All Categories</option>
+                <!-- Options populated by script.js -->
+            </select>
+        </div>
+        <!-- End Category Selector -->
+
+        <!-- Voice Selector -->
+        <div class="category-selector" style="margin-bottom: 0; text-align: left; margin-top: 10px;">
+            <label for="voiceSelect">Select Voice:</label>
+            <select id="voiceSelect">
+                <!-- Options populated by script.js -->
+            </select>
+        </div>
+        <!-- End Voice Selector -->
 
         <div class="flashcard-container">
             <div id="flashcard" class="flashcard">

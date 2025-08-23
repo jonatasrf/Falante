@@ -28,9 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
         hamburgerMenu: document.getElementById('hamburgerMenu'),
         mainNav: document.getElementById('mainNav'),
         closeNavButton: document.getElementById('closeNav'),
-        // Global Controls
-        categorySelectElement: document.getElementById('categorySelect'),
-        voiceSelectElement: document.getElementById('voiceSelect'),
+        
         // Listen & Type
         speakButton: document.getElementById('speakButton'),
         checkButton: document.getElementById('checkButton'),
@@ -98,9 +96,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- Core Functions ---
-    function loadCategories() {
+    function loadCategories(categorySelectElement) {
         const categories = getCategoriesFromLocal();
-        const selector = elements.categorySelectElement;
+        const selector = categorySelectElement;
         while (selector.options.length > 1) selector.remove(1);
         categories.forEach(category => {
             const option = document.createElement('option');
@@ -137,9 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.navSentences.classList.toggle('active', view === 'sentences');
         elements.navTest.classList.toggle('active', view === 'test');
 
-        const showGlobalSelectors = (view === 'listen' || view === 'flip');
-        elements.categorySelectElement.closest('.category-selector').style.display = showGlobalSelectors ? '' : 'none';
-        elements.voiceSelectElement.closest('.category-selector').style.display = showGlobalSelectors ? '' : 'none';
+        
 
         if (viewControllers[view] && typeof viewControllers[view].onViewActive === 'function') {
             viewControllers[view].onViewActive();
@@ -150,12 +146,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Initialization ---
     function initializeApp() {
         console.log("Initializing app..."); // Diagnostic log
-        initializeTts(elements.voiceSelectElement);
-        loadCategories();
+        loadCategories(elements.viewListen.querySelector('#categorySelect'));
+        loadCategories(elements.viewFlip.querySelector('#categorySelect'));
 
         // Initialize all views
-        viewControllers.listen = initializeListenTypeView(elements);
-        viewControllers.flip = initializeFlipCardView(elements);
+        viewControllers.listen = initializeListenTypeView({
+            ...elements,
+            categorySelectElement: elements.viewListen.querySelector('#categorySelect'),
+            voiceSelectElement: elements.viewListen.querySelector('#voiceSelect'),
+        });
+        viewControllers.flip = initializeFlipCardView({
+            ...elements,
+            categorySelectElement: elements.viewFlip.querySelector('#categorySelect'),
+            voiceSelectElement: elements.viewFlip.querySelector('#voiceSelect'),
+        });
         viewControllers.sentences = initializeSentencesManager(elements, loadCategories);
         viewControllers.test = initializeEnglishTestView(elements);
 
@@ -168,17 +172,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Hamburger Menu
         elements.hamburgerMenu.addEventListener('click', () => elements.mainNav.classList.toggle('active'));
         elements.closeNavButton.addEventListener('click', () => elements.mainNav.classList.remove('active'));
-
-        // Global Controls
-        elements.categorySelectElement.addEventListener('change', () => {
-            if (viewControllers[activeView] && typeof viewControllers[activeView].onViewActive === 'function') {
-                viewControllers[activeView].onViewActive();
-            }
-        });
-        elements.voiceSelectElement.addEventListener('change', () => {
-            localStorage.setItem('falante-voice', elements.voiceSelectElement.value);
-            showToast(`Voice changed`, 'info');
-        });
 
         // Global Shortcuts
         document.addEventListener('keydown', (event) => {

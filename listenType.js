@@ -1,4 +1,4 @@
-import { speakText, showToast, normalizeText, generateWordDiffHtml, pickRandomSentenceFromLocal, calculateLevel, sentencesNeededForLevel, sentencesNeededForNextLevel, getRandomLevelUpMessage } from './utils.js';
+import { speakText, showToast, normalizeText, generateWordDiffHtml, pickRandomSentenceFromLocal, calculateLevel, sentencesNeededForLevel, sentencesNeededForNextLevel, getRandomLevelUpMessage, initializeTts } from './utils.js';
 
 // State variables
 let currentSentenceObject = null;
@@ -17,6 +17,13 @@ export function initializeListenTypeView(elements) {
         starPopupCountElement, progressSection, currentLevelElement, progressBarElement,
         progressCountElement, nextLevelCountElement, levelUpPopup, levelUpMessage, levelUpPopupCount
     } = elements;
+
+    initializeTts(voiceSelectElement);
+
+    voiceSelectElement.addEventListener('change', () => {
+        localStorage.setItem('falante-voice', voiceSelectElement.value);
+        showToast(`Voice changed`, 'info');
+    });
 
     // --- UI Update Functions ---
     function updateProgressUI(currentUser) {
