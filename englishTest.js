@@ -3,57 +3,42 @@ import { showToast, speakText, shuffleArray, normalizeText, generateWordDiffHtml
 let parsedTestQuestions = [];
 
 function parseTestScript(script) {
-    const questions = [];
-    const lines = script.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-    let i = 0;
-    while (i < lines.length) {
-        const line = lines[i];
-        let question = null;
-        if (line.startsWith('{O}')) {
-            const prompt = line.substring(3).trim();
-            i++;
-            if (i < lines.length && lines[i].startsWith('{') && lines[i].endsWith('}')) {
-                const options = lines[i].substring(1, lines[i].length - 1).split(';').map(opt => opt.trim());
-                const correctAnswer = options[0];
-                shuffleArray(options);
-                i++;
-                let explanation = '';
-                if (i < lines.length && lines[i].startsWith('{Explanation}')) {
-                    explanation = lines[i].substring('{Explanation}'.length).trim();
-                } else { i--; }
-                question = { type: 'O', prompt, options, correctAnswer, explanation };
+    const trimmedScript = script.trim();
+    if (trimmedScript.startsWith('[')) {
+        try {
+            const items = JSON.parse(trimmedScript);
+            if (Array.isArray(items)) {
+                // Basic validation
+                return items.map(q => {
+                    if (q.type === 'multiple_choice' && q.options) {
+                        const correctAnswer = q.options[0];
+                        shuffleArray(q.options);
+                        q.correctAnswer = correctAnswer;
+                    }
+                    return q;
+                });
             }
-        } else if (line.startsWith('{A}')) {
-            const audioPhrase = line.substring(3).trim();
-            i++;
-            if (i < lines.length && lines[i].startsWith('{') && lines[i].endsWith('}')) {
-                const correctAnswer = lines[i].substring(1, lines[i].length - 1).trim();
-                i++;
-                let explanation = '';
-                if (i < lines.length && lines[i].startsWith('{Explanation}')) {
-                    explanation = lines[i].substring('{Explanation}'.length).trim();
-                } else { i--; }
-                question = { type: 'A', audioPhrase, correctAnswer, explanation };
-            }
-        } else {
-            console.warn('Unrecognized line format:', line);
+        } catch (e) {
+            console.error("Failed to parse test script as JSON:", e);
+            showToast('Invalid JSON format. Please check the script.', 'error');
+            return [];
         }
-        if (question) questions.push(question);
-        i++;
     }
-    return questions;
+    // Fallback for old format is removed for simplicity, assuming new format going forward.
+    showToast('Invalid script format. Expected a JSON array.', 'error');
+    return [];
 }
 
 export function initializeEnglishTestView(elements) {
     const {
         testScriptInputArea, loadTestFromTextBtn, importTestBtn, importTestFile, testOutput,
-        finishTestBtn, testResults, scriptExplanationContent, promptQuestionCount, promptGrammarTopic,
+        finishTestBtn, testResults, promptQuestionCount, promptGrammarTopic, promptDifficultyTest,
         generatePromptBtn, generatedPromptContainer, generatedPromptArea, copyPromptBtn, voiceSelectElement
     } = elements;
 
     function renderTest(questions) {
         testOutput.innerHTML = '';
-        if (questions.length === 0) {
+        if (!questions || questions.length === 0) {
             testOutput.innerHTML = '<p style="color:#666">No questions generated. Check script format.</p>';
             finishTestBtn.style.display = 'none';
             testResults.innerHTML = '';
@@ -62,15 +47,15 @@ export function initializeEnglishTestView(elements) {
         questions.forEach((q, index) => {
             const qId = `q-${index}`;
             let qHtml = `<div class="test-question" data-q-idx="${index}"><h3>Question ${index + 1}</h3>`;
-            if (q.type === 'O') {
-                qHtml += `<p>${q.prompt}</p><div class="options-container">`;
+            if (q.type === 'multiple_choice') {
+                qHtml += `<p>${q.question}</p><div class="options-container">`;
                 q.options.forEach(opt => {
                     qHtml += `<button class="option-button" data-val="${opt}">${opt}</button>`;
                 });
                 qHtml += `</div>`;
-            } else if (q.type === 'A') {
+            } else if (q.type === 'audio_typing') {
                 qHtml += `<p>Listen and type the sentence:</p>`;
-                qHtml += `<button class="button-primary speak-test-audio" data-phrase="${q.audioPhrase}"><i class="fa-solid fa-volume-high"></i> Speak</button>`;
+                qHtml += `<button class="button-primary speak-test-audio" data-phrase="${q.question}"><i class="fa-solid fa-volume-high"></i> Speak</button>`;
                 qHtml += `<textarea rows="2" class="test-input audio-input" placeholder="Type what you hear..."></textarea>`;
             }
             qHtml += `<div class="question-feedback" id="feedback-${qId}"></div></div>`;
@@ -99,7 +84,7 @@ export function initializeEnglishTestView(elements) {
             let isCorrect = false;
             let userAnswer = '';
 
-            if (q.type === 'O') {
+            if (q.type === 'multiple_choice') {
                 const selectedBtn = qDiv.querySelector('.option-button.selected');
                 userAnswer = selectedBtn ? selectedBtn.dataset.val.trim() : '';
                 isCorrect = normalizeText(userAnswer) === normalizeText(q.correctAnswer);
@@ -109,10 +94,10 @@ export function initializeEnglishTestView(elements) {
                     else btn.classList.add('incorrect-answer-visual');
                 });
                 if (selectedBtn && !isCorrect) selectedBtn.classList.add('user-incorrect-selection');
-            } else if (q.type === 'A') {
+            } else if (q.type === 'audio_typing') {
                 const input = qDiv.querySelector('.audio-input');
                 userAnswer = input ? input.value.trim() : '';
-                isCorrect = normalizeText(userAnswer) === normalizeText(q.correctAnswer);
+                isCorrect = normalizeText(userAnswer) === normalizeText(q.answer);
                 if (input) {
                     input.disabled = true;
                     input.classList.add(isCorrect ? 'correct-answer-visual' : 'incorrect-answer-visual');
@@ -124,10 +109,11 @@ export function initializeEnglishTestView(elements) {
                 feedbackDiv.innerHTML = '<span class="correct">Correct!</span>';
             } else {
                 let feedbackHtml = '<span class="incorrect">Incorrect.</span>';
-                if (q.type === 'A') {
-                    feedbackHtml += `<br>Your input: ${generateWordDiffHtml(q.correctAnswer, userAnswer)}`;
+                const correctAnswer = q.type === 'multiple_choice' ? q.correctAnswer : q.answer;
+                if (q.type === 'audio_typing') {
+                    feedbackHtml += `<br>Your input: ${generateWordDiffHtml(correctAnswer, userAnswer)}`;
                 } else {
-                    feedbackHtml += `<br>Correct answer: "${q.correctAnswer}"`;
+                    feedbackHtml += `<br>Correct answer: "${correctAnswer}"`;
                 }
                 feedbackDiv.innerHTML = feedbackHtml;
             }
@@ -144,8 +130,10 @@ export function initializeEnglishTestView(elements) {
         if (!script) { showToast('Paste a script first.', 'error'); return; }
         parsedTestQuestions = parseTestScript(script);
         renderTest(parsedTestQuestions);
-        showToast('Test loaded!', 'success');
-        testScriptInputArea.value = '';
+        if (parsedTestQuestions.length > 0) {
+            showToast('Test loaded!', 'success');
+            testScriptInputArea.value = '';
+        }
     });
 
     importTestBtn.addEventListener('click', () => importTestFile.click());
@@ -155,7 +143,7 @@ export function initializeEnglishTestView(elements) {
         const reader = new FileReader();
         reader.onload = (evt) => {
             testScriptInputArea.value = evt.target.result;
-            showToast('File loaded. Click Load Test to proceed.', 'info');
+            showToast('File loaded. Click Load from Text to proceed.', 'info');
         };
         reader.readAsText(file);
     });
@@ -165,9 +153,39 @@ export function initializeEnglishTestView(elements) {
     generatePromptBtn.addEventListener('click', () => {
         const count = promptQuestionCount.value || 10;
         const topic = promptGrammarTopic.value.trim();
+        const difficulty = promptDifficultyTest.value;
+
         if (!topic) { showToast('Please enter a grammar topic.', 'error'); return; }
-        const rulesText = scriptExplanationContent.innerText.split(/\r?\n/).slice(1).join('\n').trim();
-        const finalPrompt = `Generate ${count} English language learning questions about ${topic} using the following script.\n\n${rulesText}\n\nIn the end, deliver only the ready-to-copy-and-paste script, without extra explanations outside the standard format.`;
+
+        const finalPrompt = `Generate an English language test with ${count} questions about "${topic}" for an ${difficulty} level student.
+
+Provide the output as a single, minified JSON array of objects. Do not include any text or explanations outside of the JSON array itself.
+
+There are two types of questions, 'multiple_choice' and 'audio_typing'. Please provide a mix of both types.
+
+Each object in the array must have the following structure:
+
+1. For multiple-choice questions:
+{
+  "type": "multiple_choice",
+  "question": "The question text with a blank, e.g., 'She ___ to the store every day.'",
+  "options": ["goes", "go", "is going", "gone"], // An array of 4 strings. The correct answer MUST be the first one.
+  "explanation": "A brief explanation of why the correct answer is correct.",
+  "level": "${difficulty}"
+}
+
+2. For audio/typing questions:
+{
+  "type": "audio_typing",
+  "question": "The full sentence to be read aloud by text-to-speech.",
+  "answer": "The exact full sentence that the user should type.", // This should be identical to the question.
+  "explanation": "A brief explanation of the grammar point.",
+  "level": "${difficulty}"
+}
+
+Example of the required JSON output format:
+[{"type":"multiple_choice","question":"He has ___ his homework.","options":["finished","finish","finishing","fineshed"],"explanation":"The Present Perfect tense (has + past participle) is used for actions completed in the recent past.","level":"intermediate"},{"type":"audio_typing","question":"The train is expected to arrive on time.","answer":"The train is expected to arrive on time.","explanation":"This sentence uses the passive voice in the present tense.","level":"intermediate"}]`;
+
         generatedPromptArea.value = finalPrompt;
         generatedPromptContainer.style.display = 'block';
     });

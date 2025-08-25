@@ -200,7 +200,7 @@ export function initializeListenTypeView(elements) {
         userInput.focus();
     }
 
-    async function fetchAndSetSentence() {
+    async function fetchAndSetSentence(shouldSpeak = true) {
         const selectedCategory = categorySelectElement.value;
         feedbackText.style.display = 'none';
         loadingIndicator.style.display = 'inline';
@@ -218,7 +218,9 @@ export function initializeListenTypeView(elements) {
             }
             currentSentenceObject = { id: local.id, text: local.text };
             displayCurrentSentenceUI();
-            await speakSentence();
+            if (shouldSpeak) {
+                await speakSentence();
+            }
         } catch (error) {
             console.error('Failed to load local sentence:', error);
             feedbackText.textContent = `Error loading sentence: ${error.message}`;
@@ -237,7 +239,7 @@ export function initializeListenTypeView(elements) {
     hintButton.addEventListener('click', giveHint);
     nextSentenceButtonListenType.addEventListener('click', () => {
         nextSentenceButtonListenType.style.display = 'none';
-        fetchAndSetSentence();
+        fetchAndSetSentence(true);
     });
     
     userInput.addEventListener('keypress', (event) => {
@@ -250,7 +252,7 @@ export function initializeListenTypeView(elements) {
     // Return functions to be called from main.js
     return {
         onViewActive: () => {
-            fetchAndSetSentence();
+            fetchAndSetSentence(false);
             updateProgressUI(window.currentUser);
             userInput.focus();
         },

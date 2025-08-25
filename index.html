@@ -241,6 +241,14 @@
                     <input type="text" id="sentencePromptCategory" list="category-list" placeholder="e.g., Travel Phrases" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-secondary); background-color: var(--bg-tertiary); color: var(--text-primary);">
                     <datalist id="category-list"></datalist>
                 </div>
+                <div style="flex: 1 1 120px;">
+                    <label for="sentencePromptDifficulty">Difficulty Level:</label>
+                    <select id="sentencePromptDifficulty" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-secondary); background-color: var(--bg-tertiary); color: var(--text-primary); height: 38px;">
+                        <option value="beginner">Beginner</option>
+                        <option value="intermediate">Intermediate</option>
+                        <option value="advanced">Advanced</option>
+                    </select>
+                </div>
             </div>
             <div style="text-align: center; margin-bottom: 20px;">
                 <button id="generateSentencePromptBtn" class="button-primary"><i class="fa-solid fa-wand-magic-sparkles"></i> Generate Prompt</button>
@@ -285,6 +293,14 @@
                 <div style="flex-grow: 2;">
                     <label for="promptGrammarTopic">Grammar topic:</label>
                     <input type="text" id="promptGrammarTopic" placeholder="e.g., Present Perfect, Phrasal Verbs" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-secondary); background-color: var(--bg-tertiary); color: var(--text-primary);">
+                </div>
+                <div style="flex-grow: 1;">
+                    <label for="promptDifficultyTest">Difficulty Level:</label>
+                    <select id="promptDifficultyTest" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-secondary); background-color: var(--bg-tertiary); color: var(--text-primary); height: 38px;">
+                        <option value="beginner">Beginner</option>
+                        <option value="intermediate">Intermediate</option>
+                        <option value="advanced">Advanced</option>
+                    </select>
                 </div>
             </div>
             <div style="text-align: center; margin-bottom: 20px;">

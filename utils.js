@@ -123,32 +123,45 @@ export function normalizeText(text) {
 export function generateWordDiffHtml(correctSentence, userAnswer) {
     const correctWords = correctSentence.split(/\s+/).filter(Boolean);
     const userWords = userAnswer.split(/\s+/).filter(Boolean);
+    const normalizedCorrectWords = correctWords.map(normalizeText);
+
+    const correctWordFreq = normalizedCorrectWords.reduce((acc, word) => {
+        acc[word] = (acc[word] || 0) + 1;
+        return acc;
+    }, {});
+
+    // Adjust frequencies for correctly placed words
+    for (let i = 0; i < Math.min(correctWords.length, userWords.length); i++) {
+        if (normalizeText(userWords[i]) === normalizedCorrectWords[i]) {
+            correctWordFreq[normalizedCorrectWords[i]]--;
+        }
+    }
+
     let diffHtml = '';
-
-    for (let i = 0; i < Math.max(correctWords.length, userWords.length); i++) {
-        const correctWord = correctWords[i];
+    for (let i = 0; i < userWords.length; i++) {
         const userWord = userWords[i];
+        const normalizedUserWord = normalizeText(userWord);
+        const correctWord = correctWords[i];
+        const normalizedCorrectWord = correctWord ? normalizeText(correctWord) : null;
 
-        const correctWordNormalized = normalizeText(correctWord || "");
-        const userWordNormalized = normalizeText(userWord || "");
-
-        if (correctWordNormalized === userWordNormalized) {
-            // Word is correct
-            diffHtml += `<span class="diff-correct-word">${userWord || correctWord}</span> `;
+        if (normalizedUserWord === normalizedCorrectWord) {
+            diffHtml += `<span class="diff-correct-word">${userWord}</span> `;
+        } else if (correctWordFreq[normalizedUserWord] > 0) {
+            diffHtml += `<span class="diff-misplaced-word">${userWord}</span> `;
+            correctWordFreq[normalizedUserWord]--;
         } else {
-            // Word is incorrect, missing, or extra
-            if (userWord === undefined) {
-                // Missing word from user's input
-                diffHtml += `<span class="diff-missing-word">[...]</span> `;
-            } else if (correctWord === undefined) {
-                // Extra word from user's input
+            if (i >= correctWords.length) {
                 diffHtml += `<span class="diff-extra-word">${userWord}</span> `;
             } else {
-                // Incorrect word (mismatch)
                 diffHtml += `<span class="diff-incorrect-word">${userWord}</span> `;
             }
         }
     }
+
+    if (userWords.length < correctWords.length) {
+        diffHtml += `<span class="diff-missing-word">[...]</span>`;
+    }
+
     return diffHtml.trim();
 }
 

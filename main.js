@@ -64,6 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sentencePromptCount: document.getElementById('sentencePromptCount'),
         sentencePromptTheme: document.getElementById('sentencePromptTheme'),
         sentencePromptCategory: document.getElementById('sentencePromptCategory'),
+        sentencePromptDifficulty: document.getElementById('sentencePromptDifficulty'),
         generateSentencePromptBtn: document.getElementById('generateSentencePromptBtn'),
         generatedSentencePromptContainer: document.getElementById('generatedSentencePromptContainer'),
         generatedSentencePromptArea: document.getElementById('generatedSentencePromptArea'),
@@ -79,6 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
         scriptExplanationContent: document.getElementById('scriptExplanationContent'),
         promptQuestionCount: document.getElementById('promptQuestionCount'),
         promptGrammarTopic: document.getElementById('promptGrammarTopic'),
+        promptDifficultyTest: document.getElementById('promptDifficultyTest'),
         generatePromptBtn: document.getElementById('generatePromptBtn'),
         generatedPromptContainer: document.getElementById('generatedPromptContainer'),
         generatedPromptArea: document.getElementById('generatedPromptArea'),
@@ -161,7 +163,10 @@ document.addEventListener('DOMContentLoaded', () => {
             voiceSelectElement: elements.viewFlip.querySelector('#voiceSelect'),
         });
         viewControllers.sentences = initializeSentencesManager(elements, loadCategories);
-        viewControllers.test = initializeEnglishTestView(elements);
+        viewControllers.test = initializeEnglishTestView({
+            ...elements,
+            voiceSelectElement: elements.viewListen.querySelector('#voiceSelect'),
+        });
 
         // Setup Nav
         elements.navListen.addEventListener('click', (e) => { e.preventDefault(); setActiveView('listen'); });

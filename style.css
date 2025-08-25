@@ -450,6 +450,13 @@ textarea::placeholder {
     border-radius: 4px;
 }
 
+.feedback-area .diff-misplaced-word {
+    color: var(--accent-warning);
+    background-color: rgba(245, 158, 11, 0.15);
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+
 .feedback-area .diff-missing-word {
     color: var(--text-muted); /* Muted color for missing words */
     text-decoration: underline dotted; /* Dotted underline to indicate missing */

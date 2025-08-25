@@ -1,6 +1,35 @@
 import { loadLocalSentences, saveLocalSentences, getCategoriesFromLocal, showToast } from './utils.js';
 
-function parseLines(text) {
+function parseInput(text) {
+    const trimmedText = text.trim();
+    // Try parsing as JSON first
+    if (trimmedText.startsWith('[')) {
+        try {
+            const items = JSON.parse(trimmedText);
+            if (Array.isArray(items)) {
+                // Basic validation to ensure items have at least a 'text' property
+                return items.filter(item => item && typeof item.text === 'string' && item.text.length > 0)
+                    .map(item => ({
+                        id: crypto.randomUUID(),
+                        text: item.text,
+                        category: item.category || 'Uncategorized',
+                        translation_pt: item.translation_pt || '',
+                        level: item.level || 'beginner',
+                        keywords: item.keywords || [],
+                        // SRS fields
+                        nextReview: new Date().toISOString(),
+                        interval: 0,
+                        easeFactor: 2.5,
+                        reviews: 0
+                    }));
+            }
+        } catch (e) {
+            // It looked like JSON but wasn't valid, fall through to text parsing
+            console.error("JSON parsing failed:", e);
+        }
+    }
+
+    // Fallback to line-by-line parsing for "sentence // category" format
     return text.split(/\n+/).map(l => l.trim()).filter(Boolean).map(line => {
         const parts = line.split('//');
         const sentence = (parts[0] || '').trim();
@@ -9,19 +38,23 @@ function parseLines(text) {
             id: crypto.randomUUID(),
             text: sentence,
             category,
+            translation_pt: '',
+            level: 'beginner',
+            keywords: [],
             // SRS fields
-            nextReview: new Date().toISOString(), // Review immediately
+            nextReview: new Date().toISOString(),
             interval: 0,
             easeFactor: 2.5,
-            reviews: 0 // To track number of reviews
+            reviews: 0
         };
     }).filter(s => s.text.length > 0);
 }
 
+
 export function initializeSentencesManager(elements, onCategoriesUpdate) {
     const {
         bulkInput, saveBtn, clearBtn, exportBtn, importBtn, importFile, listContainer,
-        sentencePromptCount, sentencePromptTheme, sentencePromptCategory, generateSentencePromptBtn,
+        sentencePromptCount, sentencePromptTheme, sentencePromptCategory, sentencePromptDifficulty, generateSentencePromptBtn,
         generatedSentencePromptContainer, generatedSentencePromptArea, copySentencePromptBtn
     } = elements;
 
@@ -72,13 +105,30 @@ export function initializeSentencesManager(elements, onCategoriesUpdate) {
         const count = parseInt(sentencePromptCount.value, 10) || 20;
         const theme = sentencePromptTheme.value.trim();
         const category = sentencePromptCategory.value.trim();
+        const difficulty = sentencePromptDifficulty.value;
 
         if (!theme || !category) {
             showToast('Please enter a theme and a category.', 'error');
             return;
         }
 
-        const finalPrompt = `Generate ${count} English sentences for language learning about the theme '${theme}'. All sentences must belong to the '${category}' category.\n\nFormat each sentence on a new line, followed by ' // ' and the category name, exactly like this example:\n\nI would like to book a flight to New York. // ${category}\nWhat time does the train leave? // ${category}\nWhere is the nearest subway station? // ${category}\n\nIn the end, deliver only the ready-to-copy-and-paste script, without extra explanations outside the standard format.`;
+        const finalPrompt = `Generate ${count} English sentences for language learning about the theme '${theme}'.
+All sentences must belong to the '${category}' category and be targeted at an ${difficulty} level.
+
+Provide the output as a single, minified JSON array of objects. Do not include any text or explanations outside of the JSON array itself.
+
+Each object in the array must have the following structure:
+- "text": The English sentence.
+- "category": The category name, which must be "${category}".
+- "translation_pt": A simple and direct Portuguese translation.
+- "level": The difficulty level, which must be "${difficulty}".
+- "keywords": An array of 1 to 3 relevant keywords from the sentence.
+
+Example of the required JSON output format:
+[
+  {"text":"I would like to book a flight to New York.","category":"Travel","translation_pt":"Eu gostaria de reservar um voo para Nova York.","level":"beginner","keywords":["book","flight","New York"]},
+  {"text":"What time does the train leave?","category":"Travel","translation_pt":"A que horas o trem parte?","level":"beginner","keywords":["time","train","leave"]}
+]`;
 
         generatedSentencePromptArea.value = finalPrompt;
         generatedSentencePromptContainer.style.display = 'block';
@@ -96,13 +146,13 @@ export function initializeSentencesManager(elements, onCategoriesUpdate) {
     });
 
     saveBtn.addEventListener('click', () => {
-        const items = parseLines(bulkInput.value);
+        const items = parseInput(bulkInput.value);
         if (!items.length) { showToast('Nothing to save', 'info'); return; }
         const existing = loadLocalSentences();
         saveLocalSentences(existing.concat(items));
         bulkInput.value = '';
         renderList();
-        showToast('Sentences saved', 'success');
+        showToast(`${items.length} sentences saved!`, 'success');
         onCategoriesUpdate();
     });
 
