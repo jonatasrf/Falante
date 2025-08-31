@@ -1,0 +1,23 @@
+.diff-correct-word {
+  color: inherit; /* Or a subtle green */
+}
+
+.diff-misplaced-word {
+  color: orange;
+  text-decoration: underline; /* To indicate it's misplaced */
+}
+
+.diff-extra-word {
+  color: red;
+  text-decoration: line-through;
+}
+
+.diff-incorrect-word {
+  color: red;
+  text-decoration: line-through;
+}
+
+.diff-missing-word {
+  color: grey;
+  font-style: italic;
+}
